@@ -1,0 +1,12 @@
+﻿print("Hello World?!?\n");
+print("\n");
+print("Hello World?!?" + "asd");
+print("Hello World?!?");
+print("\n");
+print("\n");
+
+int a = 5;
+int b = 5;
+
+print((10 - 15) / 4.0);
+

@@ -49,6 +49,31 @@ namespace ProgramLanguage.Nodes.Math
             }
             return false;
         }
+        public override void AssignNewInterpretator(Interpretator interpretator)
+        {
+            to.Interpretator = interpretator;
+            from[0].Interpretator = interpretator;
+            to.AssignNewInterpretator(interpretator);
+            from[0].AssignNewInterpretator(interpretator);
+        }
+        public override void Execute()
+        {
+            to.Execute();
+            from[0].Execute();
+            if      (to.primitive.TryGetNode(out PBool   a1 ) && from[0].result.TryGetNode(out PBool  b1 )) { a1.Rez = b1.Rez; }
+            else if (to.primitive.TryGetNode(out PInt    a2 ) && from[0].result.TryGetNode(out PBool  b2 )) { a2.Rez = b2.Rez ? 1 : 0; }
+            else if (to.primitive.TryGetNode(out PFloat  a3 ) && from[0].result.TryGetNode(out PBool  b3 )) { a3.Rez = b3.Rez ? 1f : 0f; }
+            else if (to.primitive.TryGetNode(out PString a4 ) && from[0].result.TryGetNode(out PBool  b4 )) { a4.Rez = b4.Rez.ToString(); }
+
+            else if (to.primitive.TryGetNode(out PInt    a5 ) && from[0].result.TryGetNode(out PInt   b5 )) { a5.Rez = b5.Rez; }
+            else if (to.primitive.TryGetNode(out PFloat  a6 ) && from[0].result.TryGetNode(out PInt   b6 )) { a6.Rez = b6.Rez; }
+            else if (to.primitive.TryGetNode(out PString a7 ) && from[0].result.TryGetNode(out PInt   b7 )) { a7.Rez = b7.Rez.ToString(); }
+
+            else if (to.primitive.TryGetNode(out PFloat  a8 ) && from[0].result.TryGetNode(out PFloat b8 )) { a8.Rez = b8.Rez; }
+            else if (to.primitive.TryGetNode(out PString a9 ) && from[0].result.TryGetNode(out PFloat b9 )) { a9.Rez = b9.Rez.ToString(); }
+
+            else if (to.primitive.TryGetNode(out PString a10) && from[0].result.TryGetNode(out PString b10)){ a10.Rez = b10.Rez; }
+        }
         //[Assign:orgin/i:i + 2 ]
         private void AritmeticCompress()
         {

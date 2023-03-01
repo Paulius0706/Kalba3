@@ -7,8 +7,8 @@ namespace ProgramLanguage
 
         static void Main(string[] args)
         {
-            // .(?<=\').*(?=\').|[a-zA-z]+[a-zA-z0-9]*|\+\+|\-\-|==|<|>|<=|>=|!=|[\(\)\{\}\[\];,\.\n=\-\+\*\/\^<>&|]|[0-9]+\.[0-9]+|[0-9]+
-            string regexString = ".(?<=\\\").*(?=\\\").|[a-zA-z]+[a-zA-z0-9]*|\\+\\+|\\-\\-|==|<|>|<=|>=|!=|[\\(\\)\\{\\}\\[\\];,\\.\\n=\\-\\+\\*\\/\\^<>&|]|[0-9]+\\.[0-9]+|[0-9]+";
+            // .(?<=\')[^\']*(?=\').|[a-zA-z]+[a-zA-z0-9]*|\+\+|\-\-|==|<|>|<=|>=|!=|[\(\)\{\}\[\];,\.\n=\-\+\*\/\^<>&|]|[0-9]+\.[0-9]+|[0-9]+
+            string regexString = ".(?<=\\\")[^\\\"]*(?=\\\").|[a-zA-z]+[a-zA-z0-9]*|\\+\\+|\\-\\-|==|<=|>=|!=|[\\(\\)\\{\\}\\[\\];,\\.\\n=\\-\\+\\*\\/\\^<>&|]|[0-9]+\\.[0-9]+|[0-9]+";
             Regex regex = new Regex(regexString);
             string text = File.ReadAllText("data.txt");
             MatchCollection matchCollection = regex.Matches(text);
@@ -16,6 +16,7 @@ namespace ProgramLanguage
             Interpretator interpretator = new Interpretator(matches);
             interpretator.Compress();
             interpretator.WriteAllNodes();
+            interpretator.Execute(interpretator.nodes);
             //WriteTokens(matches);
 
         }

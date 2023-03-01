@@ -1,43 +1,51 @@
-﻿def DoStuff(int i)
-{
-    i = i + 2;
-}
-def DoStuff1(int i)
-{
-    i = i + 1;
-    if (i < 1 & i < 1)
-    {
-        i = i + 1;
-    }
-    else
-    { 
-        if (i >= 1)
-        {
-            i = i - 1;
-        }
-    }
-    for (int j = 0; j < i; j = j + 1)
-    {
-        i = i + 1;
-        i = i - 1;
-    }
-}
-def Recursion(int i)
-{
-    if (i < 0) return;
-    i = i - 1;
-    Recursion(i);
-}
-int number1 = null;
-int numadd = 5.0;
-int number = 10;
-string line = "ssss";
+﻿def Add(int result, int a, int b){ result = a + b; }
+def Pow(int a) { a = a * a;  }
+int rez;
+int a1 = 5;
+int b1 = 5;
+print("rez = " + rez + "\n");
+print("a1 = " + a1 + "\n");
+print("b1 = " + b1 + "\n");
 
-number1 = number + numadd;
-doStuff(number);
+Add(rez,a1,b1);
+print("Add a + b = rez \n");
+print("rez = " + rez + "\n");
+print("a1 = " + a1 + "\n");
+print("b1 = " + b1 + "\n");
 
-doStuff1(number, numadd);
+Pow(a1);
+print("Pow a1 ^ 2\n");
 
-Recursion(number);
+print("a1 = " + a1 + "\n");
 
 int ddd = (2 + 2) * 2;
+print("if(true) {ddd(8)/=2;} testing\n");
+if (true)
+{
+	ddd = ddd / 2;
+	print("if executed: ddd =");
+	print(ddd +"\n");
+}
+print("if(false){}else testing\n");
+if (false)
+{
+	print("if executed as true\n\n");
+}
+else
+{
+	print("if executed as false and else good");
+}
+print(" i1 = 0 while(i1 < 10) test\n ");
+int i1 = 0;
+while( i1 < 10)
+{
+	i1 = i1 + 1;
+	print(i1 +" ");
+}
+print("\n");
+for( int i=0; i<10;i = i + 1)
+{
+	i1 = i1 + 1;
+	print(i1 +" ");
+}
+

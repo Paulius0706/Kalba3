@@ -17,10 +17,11 @@ namespace ProgramLanguage
         public Interpretator parent;
         private static int interpetatorCounter = 0;
         public List<Node> nodes;
-        public static Dictionary<string,Primitive> primitives = new Dictionary<string, Primitive>();
-        public static Dictionary<string, AddMethodNode> methhods = new Dictionary<string, AddMethodNode>();
+        public Dictionary<string,Primitive> primitives = new Dictionary<string, Primitive>();
+        public static Dictionary<string, AddMethodNode> methods = new Dictionary<string, AddMethodNode>();
         public readonly int Id;
         public Interpretator() { }
+        public Interpretator(Interpretator parent) { this.parent = parent; }
         public Interpretator(List<Match> matches)
         {
             Id = interpetatorCounter++;
@@ -37,10 +38,12 @@ namespace ProgramLanguage
 
             Regex floatRegex = new Regex("[0-9]+\\.[0-9]+");
             Regex intRegex = new Regex("[0-9]+");
+            Regex stringRegex = new Regex(".(?<=\\\").*(?=\\\").");
             Regex textRegex = new Regex("[a-zA-z]+[a-zA-z0-9]*");
             // rewrite nodes
             for (int i = 0; i < nodes.Count; i++)
             {
+                if (IsMatch(stringRegex, nodes[i].Raw)) { nodes[i] = new PString(nodes[i]); continue; }
                 if (nodes[i].Raw == "-") { nodes[i] = new Sub(nodes[i]); continue; }
                 if (nodes[i].Raw == "+") { nodes[i] = new Add(nodes[i]); continue; }
                 if (nodes[i].Raw == "*") { nodes[i] = new Mul(nodes[i]); continue; }
@@ -55,6 +58,10 @@ namespace ProgramLanguage
                 if (nodes[i].Raw == "!=") { nodes[i] = new NotEqual(nodes[i]); continue; }
                 if (nodes[i].Raw == "&") { nodes[i] = new And(nodes[i]); continue; }
                 if (nodes[i].Raw == "|") { nodes[i] = new Or(nodes[i]); continue; }
+                
+                if (nodes[i].Raw == "true") { nodes[i] = new PBool(nodes[i]); continue; }
+                if (nodes[i].Raw == "false") { nodes[i] = new PBool(nodes[i]); continue; }
+
 
                 if (nodes[i].Raw == "print") { nodes[i] = new Print(nodes[i]); continue; }
 
@@ -101,11 +108,26 @@ namespace ProgramLanguage
             {
                 if (Assign.Compress(ref i, ref nodes)) continue;
                 if (AddMethodNode.Compress(ref i, ref nodes)) continue;
+
                 if (ForNode.Compress(ref i, ref nodes)) continue;
+                if (WhileNode.Compress(ref i, ref nodes)) continue;
                 if (IfNode.Compress(ref i, ref nodes)) continue;
                 if (MethodNode.Compress(ref i, ref nodes)) continue;
                 if (Print.Compress(ref i, ref nodes)) continue;
-                if (ElseNode.Compress(ref i, ref nodes)) continue;
+
+                if (PDInt.Compress(ref i, ref nodes)) continue;
+                if (PDFloat.Compress(ref i, ref nodes)) continue;
+                if (PDBool.Compress(ref i, ref nodes)) continue;
+                if (PDString.Compress(ref i, ref nodes)) continue;
+                if (PDChar.Compress(ref i, ref nodes)) continue;
+                if (PDArray.Compress(ref i, ref nodes)) continue;
+            }
+        }
+        public void Execute(List<Node> nodes)
+        {
+            foreach(Node node in nodes)
+            {
+                node.Execute();
             }
         }
         public bool DefBehind(int i)

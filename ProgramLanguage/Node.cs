@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProgramLanguage.Nodes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace ProgramLanguage
 {
     public class Node
     {
+        public Primitive result;
         public Interpretator Interpretator { get; set; }
         public readonly int Id;
         public string Raw { get; private set; }
@@ -52,6 +54,11 @@ namespace ProgramLanguage
         public bool IsNode<T>() where T : Node
         {
             return typeof(T).Name == this.GetType().Name;
+        }
+
+        public virtual void AssignNewInterpretator(Interpretator interpretator)
+        {
+
         }
     }
 }

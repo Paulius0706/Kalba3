@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,39 +30,44 @@ namespace ProgramLanguage.Nodes.Commands
         {
             if (nodes[i].TryGetNode(out ElseNode node))
             {
-                if (i + 1 < nodes.Count && nodes[i + 1].Raw == "{")
+                int index = i + 1;
+                if (IfNode.TryGetCurlyBracketSubInfo(ref index, ref nodes, out List<Node> innerNodes))
                 {
-                    nodes.RemoveAt(i + 1);
-                    int leftBrachetCount = 1;
-                    int rightBrachetCount = 0;
-                    while (nodes.Count > i + 1 && leftBrachetCount > rightBrachetCount)
-                    {
-                        if (nodes[i + 1].Raw == "}")
-                        {
-                            rightBrachetCount++;
-                            if (leftBrachetCount > rightBrachetCount)
-                            {
-                                node.innnerNodes.Add(nodes[i + 1]);
-                                nodes.RemoveAt(i + 1);
-                            }
-                            else
-                            {
-                                nodes.RemoveAt(i + 1);
-                            }
-                        }
-                        else
-                        {
-                            if (nodes[i + 1].Raw == "{") leftBrachetCount++;
-                            node.innnerNodes.Add(nodes[i + 1]);
-                            nodes.RemoveAt(i + 1);
-                        }
-                    }
+                    node.innnerNodes = innerNodes;
+                    Interpretator innerNodesInterpretator = new Interpretator();
+                    innerNodesInterpretator.CompressRec(ref node.innnerNodes);
+
                 }
-                Interpretator interpretator = new Interpretator();
-                interpretator.CompressRec(ref node.innnerNodes);
+                else if(IfNode.TryGetTillSemiColumOrCurlyBracket(ref index, ref nodes, out List<Node> oneLiner))
+                {
+                    node.innnerNodes = oneLiner;
+                    Interpretator innerNodesInterpretator = new Interpretator();
+                    innerNodesInterpretator.CompressRec(ref node.innnerNodes);
+                }
                 return true;
             }
             return false;
+        }
+        public override void Execute()
+        {
+
+            Interpretator interpretator = new Interpretator(Interpretator);
+            List<Node> nodes = new List<Node>();
+            foreach (var node in innnerNodes)
+            {
+                node.Interpretator = interpretator;
+                node.AssignNewInterpretator(interpretator);
+                nodes.Add(node);
+            }
+            interpretator.Execute(nodes);
+        }
+        public override void AssignNewInterpretator(Interpretator interpretator)
+        {
+            foreach(Node node in innnerNodes)
+            {
+                node.Interpretator = interpretator;
+                node.AssignNewInterpretator(interpretator);
+            }
         }
     }
 }

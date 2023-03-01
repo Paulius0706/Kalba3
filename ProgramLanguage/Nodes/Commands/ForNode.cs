@@ -46,38 +46,13 @@ namespace ProgramLanguage.Nodes.Commands
         {
             if (nodes[i].TryGetNode(out ForNode node))
             {
-                if (i + 1 < nodes.Count && nodes[i + 1].Raw == "(")
+                int index = i + 1;
+                if (IfNode.TryGetBracketSubInfo(ref index, ref nodes, out List<Node> variables))
                 {
-                    nodes.RemoveAt(i + 1);
-                    int leftBrachetCount = 1;
-                    int rightBrachetCount = 0;
-                    List<Node> variables = new List<Node>();
-                    while (nodes.Count > i + 1 && leftBrachetCount > rightBrachetCount)
-                    {
-                        if (nodes[i + 1].Raw == ")")
-                        {
-                            rightBrachetCount++;
-                            if (leftBrachetCount > rightBrachetCount)
-                            {
-                                variables.Add(nodes[i + 1]);
-                                nodes.RemoveAt(i + 1);
-                            }
-                            else
-                            {
-                                nodes.RemoveAt(i + 1);
-                            }
-                        }
-                        else
-                        {
-                            if (nodes[i + 1].Raw == "(") leftBrachetCount++;
-                            variables.Add(nodes[i + 1]);
-                            nodes.RemoveAt(i + 1);
-                        }
-                    }
                     node.variables = variables;
-                    
+
                     // start
-                    while (variables.Count > 0 && variables[0].Raw != ";") 
+                    while (variables.Count > 0 && variables[0].Raw != ";")
                     {
                         node.start.Add(variables[0]);
                         variables.RemoveAt(0);
@@ -105,43 +80,26 @@ namespace ProgramLanguage.Nodes.Commands
                     }
                     Interpretator afterInterpretator = new Interpretator();
                     afterInterpretator.CompressRec(ref node.after);
-                    //variables.RemoveAt(0);
-
-
                 }
-                if (i + 1 < nodes.Count && nodes[i + 1].Raw == "{")
+                if (IfNode.TryGetCurlyBracketSubInfo(ref index, ref nodes, out List<Node> innerNodes))
                 {
-                    nodes.RemoveAt(i + 1);
-                    int leftBrachetCount = 1;
-                    int rightBrachetCount = 0;
-                    while (nodes.Count > i + 1 && leftBrachetCount > rightBrachetCount)
-                    {
-                        if (nodes[i + 1].Raw == "}")
-                        {
-                            rightBrachetCount++;
-                            if (leftBrachetCount > rightBrachetCount)
-                            {
-                                node.innnerNodes.Add(nodes[i + 1]);
-                                nodes.RemoveAt(i + 1);
-                            }
-                            else
-                            {
-                                nodes.RemoveAt(i + 1);
-                            }
-                        }
-                        else
-                        {
-                            if (nodes[i + 1].Raw == "{") leftBrachetCount++;
-                            node.innnerNodes.Add(nodes[i + 1]);
-                            nodes.RemoveAt(i + 1);
-                        }
-                    }
+                    node.innnerNodes = innerNodes;
+                    Interpretator innerNodesInterpretator = new Interpretator();
+                    innerNodesInterpretator.CompressRec(ref node.innnerNodes);
                 }
-                Interpretator interpretator = new Interpretator();
-                interpretator.CompressRec(ref node.innnerNodes);
+                else if (IfNode.TryGetTillSemiColumOrCurlyBracket(ref index, ref nodes, out List<Node> oneLiner))
+                {
+                    node.innnerNodes = oneLiner;
+                    Interpretator innerNodesInterpretator = new Interpretator();
+                    innerNodesInterpretator.CompressRec(ref node.innnerNodes);
+                }
                 return true;
             }
             return false;
+        }
+        public override void Execute()
+        {
+            
         }
     }
 }

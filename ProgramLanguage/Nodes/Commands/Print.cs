@@ -29,37 +29,35 @@ namespace ProgramLanguage.Nodes.Commands
         {
             if (nodes[i].TryGetNode(out Print node))
             {
-                if (i + 1 < nodes.Count && nodes[i + 1].Raw == "(")
+                int index = i + 1;
+                if (IfNode.TryGetBracketSubInfo(ref index, ref nodes, out List<Node> variables))
                 {
-                    nodes.RemoveAt(i + 1);
-                    int leftBrachetCount = 1;
-                    int rightBrachetCount = 0;
-                    while (nodes.Count > i + 1 && leftBrachetCount > rightBrachetCount)
-                    {
-                        if (nodes[i + 1].Raw == ")")
-                        {
-                            rightBrachetCount++;
-                            if (leftBrachetCount > rightBrachetCount)
-                            {
-                                node.variables.Add(nodes[i + 1]);
-                                nodes.RemoveAt(i + 1);
-                            }
-                            else
-                            {
-                                nodes.RemoveAt(i + 1);
-                            }
-                        }
-                        else
-                        {
-                            if (nodes[i + 1].Raw == "(") leftBrachetCount++;
-                            node.variables.Add(nodes[i + 1]);
-                            nodes.RemoveAt(i + 1);
-                        }
-                    }
+                    node.variables = variables;
                 }
+                IfNode.GetMethodVaraibles(ref node.variables);
                 return true;
             }
             return false;
+        }
+        public override void Execute()
+        {
+            foreach(var node in variables)
+            {
+                node.Execute();
+                object result = null;
+                if (node.result is not null) result = node.result.GetResult();
+                if(result is string)
+                {
+                    var result1 = (result as string);
+                    var subResult = result1.Split("\\n");
+                    for(int i = 0; i < subResult.Length; i++)
+                    {
+                        Console.Write(subResult[i]);
+                        if (i != subResult.Length - 1) Console.WriteLine();
+                    }
+                }
+                else if(result is not null) Console.Write(result);
+            }
         }
     }
 }

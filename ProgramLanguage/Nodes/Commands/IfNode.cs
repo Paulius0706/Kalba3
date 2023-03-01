@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace ProgramLanguage.Nodes.Commands
 
         public List<Node> innnerNodes = new List<Node>();
         public List<Node> variables = new List<Node>();
+        public ElseNode elseNode;
 
         public override string ToString()
         {
@@ -27,7 +29,14 @@ namespace ProgramLanguage.Nodes.Commands
                 if (i > 0 && innnerNodes[i - 1].Line < innnerNodes[i].Line) str += "\n";
                 str += innnerNodes[i];
             }
-            str += "\n}]";
+            str += "\n}";
+            if(elseNode is not null)
+            {
+                str += ":";
+                str += elseNode;
+                str += "";
+            }
+            str += "]";
             return str;
         }
 
@@ -35,68 +44,68 @@ namespace ProgramLanguage.Nodes.Commands
         {
             if (nodes[i].TryGetNode(out IfNode node))
             {
-                if (i + 1 < nodes.Count && nodes[i + 1].Raw == "(")
+                int index = i + 1;
+                if (IfNode.TryGetBracketSubInfo(ref index, ref nodes, out List<Node> variables))
                 {
-                    nodes.RemoveAt(i + 1);
-                    int leftBrachetCount = 1;
-                    int rightBrachetCount = 0;
-                    while (nodes.Count > i + 1 && leftBrachetCount > rightBrachetCount)
-                    {
-                        if (nodes[i + 1].Raw == ")")
-                        {
-                            rightBrachetCount++;
-                            if (leftBrachetCount > rightBrachetCount)
-                            {
-                                node.variables.Add(nodes[i + 1]);
-                                nodes.RemoveAt(i + 1);
-                            }
-                            else
-                            {
-                                nodes.RemoveAt(i + 1);
-                            }
-                        }
-                        else
-                        {
-                            if (nodes[i + 1].Raw == "(") leftBrachetCount++;
-                            node.variables.Add(nodes[i + 1]);
-                            nodes.RemoveAt(i + 1);
-                        }
-                    }
+                    node.variables = variables;
                     node.AritmeticCompressRec(ref node.variables);
+
                 }
-                if (i + 1 < nodes.Count && nodes[i + 1].Raw == "{")
+                if (IfNode.TryGetCurlyBracketSubInfo(ref index, ref nodes, out List<Node> innerNodes))
                 {
-                    nodes.RemoveAt(i + 1);
-                    int leftBrachetCount = 1;
-                    int rightBrachetCount = 0;
-                    while (nodes.Count > i + 1 && leftBrachetCount > rightBrachetCount)
-                    {
-                        if (nodes[i + 1].Raw == "}")
-                        {
-                            rightBrachetCount++;
-                            if (leftBrachetCount > rightBrachetCount)
-                            {
-                                node.innnerNodes.Add(nodes[i + 1]);
-                                nodes.RemoveAt(i + 1);
-                            }
-                            else
-                            {
-                                nodes.RemoveAt(i + 1);
-                            }
-                        }
-                        else
-                        {
-                            if (nodes[i + 1].Raw == "{") leftBrachetCount++;
-                            node.innnerNodes.Add(nodes[i + 1]);
-                            nodes.RemoveAt(i + 1);
-                        }
-                    }
+                    node.innnerNodes = innerNodes;
+                    Interpretator innerNodesInterpretator = new Interpretator();
+                    innerNodesInterpretator.CompressRec(ref node.innnerNodes);
+
                 }
-                Interpretator interpretator = new Interpretator();
-                interpretator.CompressRec(ref node.innnerNodes);
+                else if (IfNode.TryGetTillSemiColumOrCurlyBracket(ref index, ref nodes, out List<Node> oneLiner))
+                {
+                    node.innnerNodes = oneLiner;
+                    Interpretator innerNodesInterpretator = new Interpretator();
+                    innerNodesInterpretator.CompressRec(ref node.innnerNodes);
+                }
+                if (nodes.Count > index && ElseNode.Compress(ref index, ref nodes) && nodes[index].TryGetNode(out ElseNode elseNode)) 
+                {
+                    node.elseNode = elseNode;
+                    nodes.RemoveAt(index);
+                }
                 return true;
             }
             return false;
+        }
+
+        public override void Execute()
+        {            
+            Interpretator interpretator = new Interpretator(Interpretator);
+            Interpretator variableInterpretator = new Interpretator(interpretator);
+
+            List<Node> variables = new List<Node>();
+            foreach (var node in this.variables)
+            {
+                node.Interpretator = variableInterpretator;
+                node.AssignNewInterpretator(variableInterpretator);
+                variables.Add(node);
+            }
+            variables[0].Execute();
+            bool isTrue = (bool)variables[0].result.GetResult();
+
+            if (isTrue)
+            {
+                List<Node> nodes = new List<Node>();
+                foreach (var node in innnerNodes)
+                {
+                    node.Interpretator = interpretator;
+                    node.AssignNewInterpretator(interpretator);
+                    nodes.Add(node);
+                }
+                interpretator.Execute(nodes);
+            }
+            else if(elseNode is not null)
+            {
+                elseNode.Interpretator = interpretator;
+                elseNode.AssignNewInterpretator(interpretator);
+                elseNode.Execute();
+            }
         }
     }
 }

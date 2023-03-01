@@ -9,8 +9,17 @@ namespace ProgramLanguage.Nodes
     public class Primitive : Node
     {
         public Primitive():base(){}
-        public Primitive(Node node) : base(node.Raw, node.Line, node.Id, node.Interpretator){  }
+        public Primitive(Node node) : base(node.Raw, node.Line, node.Id, node.Interpretator){ }
 
+        public override void Execute()
+        {
+            result = this;
+            base.Execute();
+        }
+        public void FastExecute()
+        {
+            result = Interpretator.primitives[Raw];
+        }
         public override string ToString()
         {
             return "[" + GetType().Name[1] +":" + Raw +"]";
@@ -28,13 +37,32 @@ namespace ProgramLanguage.Nodes
         {
             Path = node.Raw;
         }
-        private Node FindPrimitive()
+
+        
+        public override object GetResult()
         {
-            return FindPrimitiveRec(Raw);
+            return primitive;
         }
-        private Node FindPrimitiveRec(string name)
+        // add recursive search
+        public override void Execute()
         {
+            primitive = GetPrimitive(Interpretator, Raw);
+            result = primitive;
+        }
+        
+        public Primitive GetPrimitive(Interpretator interpretator,string name)
+        {
+            if (interpretator.primitives.ContainsKey(name))
+            {
+                interpretator.primitives[name].Execute();
+                return interpretator.primitives[name];
+            }
+            else if(interpretator.parent is not null)
+            {
+                return GetPrimitive(interpretator.parent, name);
+            }
             return null;
+
         }
     }
     public class PNull : Primitive
@@ -45,80 +73,80 @@ namespace ProgramLanguage.Nodes
     }
     public class PInt : Primitive
     {
-        public int Number { get; set; }
+        public int Rez { get; set; }
         public PInt() : base() { }
-        public PInt(Node node, bool parseRaw = false):base(node)
+        public PInt(Node node, bool parseRaw = true) :base(node)
         {
-            if(parseRaw) Number = int.Parse(node.Raw);
+            if(parseRaw) Rez = int.Parse(node.Raw);
         }
         public override object GetResult()
         {
-            return Number;
+            return Rez;
         }
     }
     public class PFloat : Primitive
     {
-        public float Number { get; set; }
+        public float Rez { get; set; }
         public PFloat() : base() { }
-        public PFloat(Node node, bool parseRaw = false) : base(node)
+        public PFloat(Node node, bool parseRaw = true) : base(node)
         {
-            if (parseRaw) Number = float.Parse(node.Raw);
+            if (parseRaw) Rez = float.Parse(node.Raw);
         }
         public override object GetResult()
         {
-            return Number;
+            return Rez;
         }
     }
     public class PBool : Primitive
     {
-        public bool Boolean { get; set; }
+        public bool Rez { get; set; }
         public PBool() : base() { }
-        public PBool(Node node, bool parseRaw = false) : base(node)
+        public PBool(Node node, bool parseRaw = true) : base(node)
         {
-            if (parseRaw) Boolean = Raw == "true" ? true : false;
+            if (parseRaw) Rez = Raw == "true" ? true : false;
         }
         public override object GetResult()
         {
-            return Boolean;
+            return Rez;
         }
     }
     public class PString : Primitive
     {
-        public string Str { get; set; }
+        public string Rez { get; set; }
         public PString() : base() { }
-        public PString(Node node, bool parseRaw = false) : base(node)
+        public PString(Node node, bool parseRaw = true) : base(node)
         {
-            if (parseRaw) Str = node.Raw.Replace("\"", "");
+            if (parseRaw) Rez = node.Raw.Replace("\"", "");
         }
         public override object GetResult()
         {
-            return Str;
+            return Rez;
         }
     }
     public class PChar : Primitive
     {
-        public string Str { get; set; }
+        public string Rez { get; set; }
         public PChar() : base() { }
-        public PChar(Node node, bool parseRaw = false) : base(node)
+        public PChar(Node node, bool parseRaw = true) : base(node)
         {
-            if (parseRaw) Str = node.Raw.Replace("\"", "");
+            if (parseRaw) Rez = node.Raw.Replace("\"", "");
         }
         public override object GetResult()
         {
-            return Str;
+            return Rez;
         }
     }
     public class PArray : Primitive
     {
-        public int Number { get; set; }
+        public int Rez { get; set; }
         public PArray() : base() { }
-        public PArray(Node node, bool parseRaw = false) : base(node)
+        public PArray(Node node, bool parseRaw = true) : base(node)
         {
-            if (parseRaw) Number = int.Parse(node.Raw);
+            if (parseRaw) Rez = int.Parse(node.Raw);
         }
         public override object GetResult()
         {
-            return Number;
+            return Rez;
         }
     }
 

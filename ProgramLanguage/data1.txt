@@ -1,0 +1,43 @@
+﻿def DoStuff(int i)
+{
+    i = i + 2;
+}
+def DoStuff1(int i)
+{
+    i = i + 1;
+    if (i < 1 & i < 1)
+    {
+        i = i + 1;
+    }
+    else
+     
+        if (i >= 1)
+        {
+            i = i - 1;
+        }
+    if( i > 1) i = i -1;
+    for (int j = 0; j < i; j = j + 1)
+    {
+        i = i + 1;
+        i = i - 1;
+    }
+}
+def Recursion(int i)
+{
+    if (i < 0) return;
+    i = i - 1;
+    Recursion(i);
+}
+int number1 = null;
+int numadd = 5.0;
+int number = 10;
+string line = "ssss";
+
+number1 = number + numadd;
+doStuff(number);
+
+doStuff1(number, numadd);
+
+Recursion(number);
+
+int ddd = (2 + 2) * 2;

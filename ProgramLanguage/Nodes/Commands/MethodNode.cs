@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,37 +30,44 @@ namespace ProgramLanguage.Nodes.Commands
         {
             if (nodes[i].TryGetNode(out MethodNode node))
             {
-                if (i + 1 < nodes.Count && nodes[i + 1].Raw == "(")
+                int index = i + 1;
+                if (MethodNode.TryGetBracketSubInfo(ref index, ref nodes, out List<Node> variables))
                 {
-                    nodes.RemoveAt(i + 1);
-                    int leftBrachetCount = 1;
-                    int rightBrachetCount = 0;
-                    while (nodes.Count > i + 1 && leftBrachetCount > rightBrachetCount)
-                    {
-                        if (nodes[i + 1].Raw == ")")
-                        {
-                            rightBrachetCount++;
-                            if (leftBrachetCount > rightBrachetCount)
-                            {
-                                node.variables.Add(nodes[i + 1]);
-                                nodes.RemoveAt(i + 1);
-                            }
-                            else
-                            {
-                                nodes.RemoveAt(i + 1);
-                            }
-                        }
-                        else
-                        {
-                            if (nodes[i + 1].Raw == "(") leftBrachetCount++;
-                            node.variables.Add(nodes[i + 1]);
-                            nodes.RemoveAt(i + 1);
-                        }
-                    }
+                    node.variables = variables;
                 }
+                IfNode.GetMethodVaraibles(ref node.variables);
                 return true;
             }
             return false;
+        }
+        public override void Execute()
+        {
+            List<Node> nodes = new List<Node>();
+            Interpretator interpretator = new Interpretator();
+            AddMethodNode addMethodNode = Interpretator.methods[Raw];
+            for(int i = 0; i < addMethodNode.variables.Count; i++)
+            {
+                if (variables[i].GetType().Name == nameof(PVariable) )
+                {
+                    variables[i].Execute();
+                    interpretator.primitives.Add(addMethodNode.variables[i].Item1, (variables[i] as PVariable).result);
+                }
+                else if (variables[i].Raw != ",")
+                {
+                    variables[i].Execute();
+                    interpretator.primitives.Add(addMethodNode.variables[i].Item1, variables[i].result);
+                }
+            }
+            foreach (var node in addMethodNode.innnerNodes)
+            {
+                nodes.Add(node);
+            }
+            foreach (var node in nodes)
+            {
+                node.Interpretator = interpretator;
+                node.AssignNewInterpretator(interpretator);
+            }
+            interpretator.Execute(nodes);
         }
     }
 }
